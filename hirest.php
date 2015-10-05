@@ -1,26 +1,36 @@
 <?php
-
 /**
- * Грузим на лету классы по имени. Ищем в нужных папках.
+ * Autoload requested classes
  * @param $class_name
  */
-function __autoload($class_name) {
-    if(file_exists($class_name.'/index.php'))
-        include $class_name.'/index.php';
-    if(file_exists($class_name.'/'.$class_name.'.php'))
-        include $class_name.'/'.$class_name.'.php';
-    if(file_exists($class_name.'.php'))
-        include $class_name.'.php';
+function __autoload($c) {
+    if(!defined('APP_PATH')){
+        define( 'APP_PATH', dirname(__FILE__).DIRECTORY_SEPARATOR) ;
+    }
+
+    if(file_exists(APP_PATH.$c.'/index.php')){
+        include APP_PATH.$c.DIRECTORY_SEPARATOR.'index.php';
+    }
+    if(file_exists(APP_PATH.$c.DIRECTORY_SEPARATOR.$c.'.php')){
+        include APP_PATH.$c.DIRECTORY_SEPARATOR.$c.'.php';
+    }
+    if(file_exists(APP_PATH.$c.'.php')){
+        include APP_PATH.$c.'.php';
+    }
+    if(file_exists($c.'.php')){
+        include $c.'.php';
+    }
 }
 
 class hirest{
 
-    var $routes = array();
+    public $routes = array();
     private static $instance;
+    private $responseHandlerFunction = null;
 
     /**
-     * Делаем сиглетон
-     * @return mixed
+     * Singleton
+     * @return hirest
      */
     public static function getInstance() {
         if(!is_object(self::$instance)) {
@@ -31,60 +41,94 @@ class hirest{
     }
 
     /**
-     * Добавляем роут в наше приложение.
-     * Все роуты добавляются в файле routes.php
+     * @param $response
+     * @return response handled with defined function
+     */
+    public function responseHandler($response){
+        if($this->responseHandlerFunction !== null){
+            echo call_user_func($this->responseHandlerFunction,$response);
+            return;
+        }
+        return $response;
+    }
+
+    /** define response handler function
+     * @param $function
+     */
+    public function setResponseHandler($function){
+        $this->responseHandlerFunction = $function;
+    }
+
+    /**
+     * Add route rule
      * @param $regex
      * @param $controller
      * @param $action
      * @return $this
      */
-    public function route($regex, $controller, $action){
-        $this->routes[$regex] = array($controller,$action);
+    public function route($regex, $action, $allowed_methods = null ){
+        $this->routes[$regex] = array(
+            'action' => $action,
+            'allowed_methods' => $allowed_methods
+        );
         return $this;
     }
 
-
     /**
-     * Парсим URL и если он попадает под роут, запускаем соответствующий контроллер и экшн
-     * @return bool
+     * parse URI and handle it
+     * @return response
      */
     public function run(){
-        preg_match('~^([^\?]+)~ui',$_SERVER['REQUEST_URI'],$uri);
+
+        if(isset($_SERVER['REQUEST_URI'])){
+            $request_uri = $_SERVER['REQUEST_URI'];
+        }elseif(isset($_SERVER['argv'][1])){
+            $request_uri = $_SERVER['argv'][1];
+        }else{
+            exit('invalid request');
+        }
+        preg_match('~^([^\?]+)~ui',$request_uri,$uri);
 
         $uri = $uri[0];
         $route_founded = false;
         foreach($this->routes AS $route => $action){
-            if(preg_match('~^'.$route.'[/]?$~iu',$uri,$params)){
+            if(preg_match('~^/?'.$route.'[/]?$~iu',$uri,$params)){
+                if($action['allowed_methods'] !== null
+                    && (
+                        !isset($_SERVER['REQUEST_METHOD'])
+                        || !in_array($_SERVER['REQUEST_METHOD'],$action['allowed_methods'])
+                    )){
+                    continue;
+                }
                 $route_founded = true;
-                unset($params[0]); // вся подстрока не нужна. Мусор регекспа в данном случае
-
-                $controller_name      = $action[0];                       // Имя контроллера
-                $action_name          = $action[1];                       // Имя экшена
+                unset($params[0]);
+                array_unique($params);
                 break;
             }
         }
         if($route_founded == false){
-            throw new NotFoundHttpException('Interface not found');
+            http_response_code(404);
+            exit();
         }
 
+        var_dump($params);
 
-        // Запускаем контроллер
-        $controller = new $controller_name();
-        $controller->$action_name(list($params));
+        if(is_callable($action['action'],true)){
+            if(is_array($action['action'])){
+                $action['action'][0] = new $action['action'][0];
+            }
+            $response = call_user_func_array($action['action'],$params);
+        }
 
-
-        // Выполним, если есть что, перед экшеном
-        $controller->beforeActionRun();
-        // Выполняем экшн
-        $controller->$action_name();
-        // Выполним, если есть что, после экшена
-        $controller->afterActionRun();
-
-        return true;
+        return $this->responseHandler($response);
     }
 
 }
 
+/**
+ * Return hirest instance
+ * @return hirest
+ */
 function hirest(){
     return hirest::getInstance();
 }
