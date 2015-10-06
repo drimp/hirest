@@ -1,5 +1,4 @@
 <?php
-
 // Define APP_PATH is not required, but it can be useful
 // if you will decide move you api files to other dir.
 // Or if you want to change source dir quickly. e.g. For different versions
