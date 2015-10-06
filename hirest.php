@@ -101,8 +101,11 @@ class hirest{
                     continue;
                 }
                 $route_founded = true;
-                unset($params[0]);
-                array_unique($params);
+                foreach( $params AS $key => $value){
+                    if(is_numeric($key)){
+                        unset($params[$key]);
+                    }
+                }
                 break;
             }
         }
@@ -110,8 +113,6 @@ class hirest{
             http_response_code(404);
             exit();
         }
-
-        var_dump($params);
 
         if(is_callable($action['action'],true)){
             if(is_array($action['action'])){

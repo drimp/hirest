@@ -7,11 +7,12 @@ class example{
     }
 
     public static function md5($string, $times){
-        var_dump($string,$times);
-        for($i = 1; $i < $times; $i++){
+        $result = [];
+        for($i = 1; $i <= $times; $i++){
             $string = md5($string);
+            $result[$i] = $string;
         }
-        return $string;
+        return $result;
     }
 
 }
