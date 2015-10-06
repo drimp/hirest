@@ -1,22 +1,37 @@
 # hirest
 Lightning fast RESTful API php-framework
 
-Designed for easy scalability.
+Designed for easy scalability and highloads.
+
+## Features
+* Lightweight
+* One file framework
+* In route validation
+* Routes must call: functions, closures, static and non-static methods
+* Work in console too
+* Change output format by one string
+
+## TODO
+
+- [ ] Filtering middleware
+- [ ] Cache
 
 ## Usage
 All usage examples including in repo. It is pretty easy.
 
-```
+```php
+include APP_PATH.'hirest.php';
+
 hirest()
 
         // yourdomain.com/hello will display 'hello'
         ->route('hello', function(){ return 'hello'; } )
 
-        // call to $example->helloName('John') for yourdomain.com/hello/John
-        ->route('hello/(?<name>[a-z\s]+)', ['example','helloName'] )
+        // call to $api->helloName('John') for yourdomain.com/hello/John
+        ->route('hello/(?<name>[a-z\s]+)', ['api','helloName'] )
 
-        // call to static example::md5($string, $times)
-        ->route('md5/(?<string>.*)/(?<times>[0-9]+)', 'example::md5')
+        // call to static api::md5($string, $times)
+        ->route('md5/(?<string>.*)/(?<times>[0-9]+)', 'api::md5')
 
         // call to time() php function only if HTTP method is in GET or POST
         ->route('time','time', ['GET', 'POST']);
@@ -24,4 +39,3 @@ hirest()
 
 hirest()->run();
 ```
-
