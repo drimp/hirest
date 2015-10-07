@@ -3,7 +3,7 @@ Lightning fast RESTful API php-framework
 
 Designed for easy scalability and highloads.
 
-## Features
+### Features
 * Lightweight
 * One file framework
 * In route validation
@@ -11,13 +11,13 @@ Designed for easy scalability and highloads.
 * Work in console too
 * Change output format by one string
 
-## TODO
+### TODO
 
 - [ ] Filtering middleware
 - [ ] Cache
 
-## Usage
-All usage examples including in repo. It is pretty easy.
+### Usage
+All usage examples included in repo. It is pretty easy.
 
 ```php
 include APP_PATH.'hirest.php';
