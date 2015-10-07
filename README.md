@@ -13,8 +13,8 @@ Designed for easy scalability and highloads.
 
 ### TODO
 
-- [ ] Filtering middleware
-- [ ] Cache
+- [x] Filtering middleware
+- [x] Cache __(use responseHandlers and middleware for you own cache methods)__
 
 ### Usage
 All usage examples included in repo. It is pretty easy.
