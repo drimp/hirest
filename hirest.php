@@ -26,7 +26,8 @@ class hirest{
 
     public $routes = array();
     private static $instance;
-    private $responseHandlerFunction = null;
+    private $responseHandlerFunctions = [];
+    private $request = null;
 
     /**
      * Singleton
@@ -42,21 +43,26 @@ class hirest{
 
     /**
      * @param $response
-     * @return response handled with defined function
+     * @return response handled with defined functions
      */
-    public function responseHandler($response){
-        if($this->responseHandlerFunction !== null){
-            echo call_user_func($this->responseHandlerFunction,$response);
-            return;
+    public function responseHandle($response){
+        if(!empty($this->responseHandlerFunctions)){
+            foreach($this->responseHandlerFunctions AS $handler){
+                $response = call_user_func($handler,$response);
+            }
         }
         return $response;
     }
 
-    /** define response handler function
+    /** add response handler function
      * @param $function
      */
-    public function setResponseHandler($function){
-        $this->responseHandlerFunction = $function;
+    public function addResponseHandler($function){
+        if(is_callable($function,true)){
+            $this->responseHandlerFunctions[] = $function;
+            return true;
+        }
+        throw new Exception('Response handler is not a function');
     }
 
     /**
@@ -106,6 +112,11 @@ class hirest{
                         unset($params[$key]);
                     }
                 }
+                $this->request = [
+                    'URI'    => $uri,
+                    'route'  => $route,
+                    'action' => $action
+                ];
                 break;
             }
         }
@@ -121,7 +132,8 @@ class hirest{
             $response = call_user_func_array($action['action'],$params);
         }
 
-        return $this->responseHandler($response);
+        echo $this->responseHandle($response);
+        return;
     }
 
 }

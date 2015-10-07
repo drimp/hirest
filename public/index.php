@@ -9,7 +9,7 @@ include APP_PATH.'hirest.php';
 // Default function for handling result request.
 // Accept any callabe function.
 // In this case just encode all data to json.
-hirest()->setResponseHandler('json_encode');
+hirest()->addResponseHandler('json_encode');
 
 // Routing example
 hirest()
