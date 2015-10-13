@@ -3,7 +3,7 @@
  * Autoload requested classes
  * @param $class_name
  */
-function __autoload($c) {
+spl_autoload_register(function($c) {
     if(!defined('APP_PATH')){
         define( 'APP_PATH', dirname(__FILE__).DIRECTORY_SEPARATOR) ;
     }
@@ -20,7 +20,7 @@ function __autoload($c) {
     if(file_exists($c.'.php')){
         include $c.'.php';
     }
-}
+});
 
 class hirest{
 
@@ -107,7 +107,8 @@ class hirest{
      */
     public function route($regex, $action, $allowed_methods = null ){
         if(is_callable($action)){
-            $this->routes[$regex] = array(
+            $this->routes[] = array(
+                'regex' => $regex,
                 'action' => $action,
                 'allowed_methods' => $allowed_methods
             );
@@ -133,8 +134,8 @@ class hirest{
 
         $uri = $uri[0];
         $route_founded = false;
-        foreach($this->routes AS $route => $action){
-            if(preg_match('~^/?'.$route.'[/]?$~iu',$uri,$params)){
+        foreach($this->routes AS $action){
+            if(preg_match('~^/?'.$action['regex'].'[/]?$~iu',$uri,$params)){
                 if($action['allowed_methods'] !== null
                     && (
                         !isset($_SERVER['REQUEST_METHOD'])
@@ -150,7 +151,7 @@ class hirest{
                 }
                 $this->request = [
                     'URI'    => $uri,
-                    'route'  => $this->routes[$route]
+                    'route'  => $action
                 ];
                 break;
             }
