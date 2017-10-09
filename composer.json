@@ -1,0 +1,17 @@
+{
+  "require": {
+    "php": ">=5.6.0",
+    "hirest/core": "dev-dev"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/drimp/hirest-core"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  }
+}

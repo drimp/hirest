@@ -1,2 +1,5 @@
 .idea
 .DS_*
+vendor
+.env
+composer.lock
